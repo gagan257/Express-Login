@@ -1,8 +1,56 @@
-const express = require('express')
-const app = express()
+const express = require('express');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const path = require('path');
+const app = express();
 
-app.use('/',express.static(__dirname + '/public')) // initial page that will be loaded
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: true }));
 
-app.listen(4444, ()=>{
-    console.log('server started on http://localhost:4444')
-})
+const mysql = require('mysql2');
+const connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'gagan',
+    password: '1234',
+    database: 'loginsys'
+});
+
+connection.connect((err) => {
+    if (err) throw err;
+    console.log('Connected to the MySQL database');
+});
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/index.html'));
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+
+    connection.query(query, [username, password], (err, result) => {
+        if (err) throw err;
+
+        if (result.length > 0) {
+            req.session.loggedin = true;
+            req.session.username = username;
+            res.redirect('/dashboard');
+        } else {
+            res.send('Incorrect username or password');
+        }
+    });
+});
+
+app.post('/register', (req, res) => {
+    const { username, password } = req.body;
+    const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+
+    connection.query(query, [username, password], (err, result) => {
+        if (err) throw err;
+        res.redirect('/');
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Server started on http://localhost:3000');
+});
