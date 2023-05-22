@@ -10,7 +10,8 @@
 </head>
 <body>
     <h1>Login</h1>
-    <form action="/login" method="post">
+    <form action="/" method="post">
+        <input type="hidden" name="action" value="login">
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" required>
         <br>
@@ -21,7 +22,8 @@
     </form>
 
     <h1>Register</h1>
-    <form action="/register" method="post">
+    <form action="/" method="post">
+        <input type="hidden" name="action" value="register">
         <label for="username">Username:</label>
         <input type="text" name="username" id="username" required>
         <br>

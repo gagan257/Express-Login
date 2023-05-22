@@ -24,31 +24,34 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/public/index.html'));
 });
 
-app.post('/login', (req, res) => {
+app.post('/', (req, res) => {
     const { username, password } = req.body;
-    const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
+    const action = req.body.action;
 
-    connection.query(query, [username, password], (err, result) => {
-        if (err) throw err;
+    if (action === 'login') {
+        const query = 'SELECT * FROM users WHERE username = ? AND password = ?';
 
-        if (result.length > 0) {
-            req.session.loggedin = true;
-            req.session.username = username;
-            res.redirect('/dashboard');
-        } else {
-            res.send('Incorrect username or password');
-        }
-    });
-});
+        connection.query(query, [username, password], (err, result) => {
+            if (err) throw err;
 
-app.post('/register', (req, res) => {
-    const { username, password } = req.body;
-    const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
+            if (result.length > 0) {
+                req.session.loggedin = true;
+                req.session.username = username;
+                res.redirect('/dashboard');
+            } else {
+                res.send('Incorrect username or password');
+            }
+        });
+    } else if (action === 'register') {
+        const query = 'INSERT INTO users (username, password) VALUES (?, ?)';
 
-    connection.query(query, [username, password], (err, result) => {
-        if (err) throw err;
-        res.redirect('/');
-    });
+        connection.query(query, [username, password], (err, result) => {
+            if (err) throw err;
+            res.redirect('/');
+        });
+    } else {
+        res.status(400).send('Invalid action');
+    }
 });
 
 app.listen(3000, () => {
